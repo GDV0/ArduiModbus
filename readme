@@ -1,1 +1,12 @@
-The goal of this project is to provide a slave/master Modbus library for Arduino 
+The goal of this project is to provide a Client/Server Modbus RTU  library for Arduino. 
+
+Modbus Function codes supported are:
+  FC01: Read coil status
+  FC02: Read input status
+  FC03: Read Holding register
+  FC04: Read input registers
+  FC05: Force single coil
+  FC06: Preset single register
+  FC07: Read Exception status
+  FC16: Preset multiple registers
+  FC23: Read/Write multiple registers

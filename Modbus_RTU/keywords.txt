@@ -1,0 +1,76 @@
+#######################################
+# Syntax Coloring Map For Modbus_RTU
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+Modbus_RTU	KEYWORD1
+Modbus_Frame	KEYWORD1
+Modbus_Data	KEYWORD1
+t_status	KEYWORD1
+t_baud	KEYWORD1
+t_parity	KEYWORD1
+t_devicetype	KEYWORD1
+t_datatype	KEYWORD1
+t_functioncode	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+SetType	KEYWORD2
+GetType	KEYWORD2
+GetTypeNb	KEYWORD2
+SetBaudrate	KEYWORD2
+GetBaudrate	KEYWORD2
+SetParity	KEYWORD2
+GetParity	KEYWORD2
+GetFrameTimeout	KEYWORD2
+GetCRC16	KEYWORD2
+Server_SetAddress	KEYWORD2
+Server_GetAddress	KEYWORD2
+Server_Update	KEYWORD2
+Client_ReadCoils	KEYWORD2
+Client_ReadDiscreteInputs	KEYWORD2
+Client_ReadHoldingRegisters	KEYWORD2
+Client_ReadInputRegisters	KEYWORD2
+Client_WriteSingleCoil	KEYWORD2
+Client_WriteSingleRegister	KEYWORD2
+Client_ReadException	KEYWORD2
+Client_PresetMultipleRegisters	KEYWORD2
+Client_ReadWriteMultipleRegisters	KEYWORD2
+Client_Update	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+MDB_BAUD_1200 LITERAL1
+MDB_BAUD_2400 LITERAL1
+MDB_BAUD_4800 LITERAL1
+MDB_BAUD_9600 LITERAL1
+MDB_BAUD_19200 LITERAL1
+
+MDB_BIT LITERAL1
+MDB_BYTE LITERAL1
+MDB_WORD LITERAL1
+MDB_LONG LITERAL1
+
+MDB_SERVER	LITERAL1
+MDB_CLIENT	LITERAL1
+
+MDB_FC01	LITERAL1
+MDB_FC02	LITERAL1
+MDB_FC03	LITERAL1
+MDB_FC04	LITERAL1
+MDB_FC05	LITERAL1
+MDB_FC06	LITERAL1
+MDB_FC07	LITERAL1
+MDB_FC16	LITERAL1
+MDB_FC23	LITERAL1
+
+MDB_PARITY_EVEN	LITERAL1
+MDB_PARITY_ODD	LITERAL1
+MDB_PARITY_NONE	LITERAL1
+
+OK	LITERAL1
+NOK	LITERAL1
