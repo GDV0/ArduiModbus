@@ -215,7 +215,8 @@ t_status Modbus_RTU::SetBaudrate(t_baud Param)
       (Param != MDB_BAUD_2400) || 
       (Param != MDB_BAUD_4800) || 
       (Param != MDB_BAUD_9600) || 
-      (Param != MDB_BAUD_19200))
+      (Param != MDB_BAUD_19200)|| 
+      (Param != MDB_BAUD_38400))
   {
     Status = NOK;
   }
