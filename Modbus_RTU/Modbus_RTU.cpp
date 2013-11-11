@@ -55,9 +55,18 @@ Modbus_RTU::Modbus_RTU(int Param)
   // Initialize baudrate to 19200 Bauds and parity to Even
   Mdb_Baudrate = MDB_BAUD_19200;
   Mdb_Parity = MDB_PARITY_EVEN;
+  
+  // Initialize all counters and Listen Only status
+  Mdb_FrameReceived = 0;
+  Mdb_FrameNotResponded = 0;
+  Mdb_FrameServerReceived = 0;
+  Mdb_FrameExceptionSent = 0;
+  Mdb_FrameServerSent = 0;
+  Mdb_ListenOnly = false;
 }
 
 // Callback functions /////////////////////////////////////////////////////// 
+// Callback function could be overridden if same function is declared in the user code
 t_status Modbus_CB_SetCoil(unsigned short Param1, int* Param2) __attribute__((weak));
 /**************************************************************************//**
 *   \brief      This function sets the state of a single coil 
@@ -78,7 +87,7 @@ t_status Modbus_CB_GetCoil(unsigned short Param1, int* Param2) __attribute__((we
 *   \brief      This function provides the state of a single coil
 *   \ingroup    Callbacks
 *   \param[in]  Param1 Address of the coil to be read
-*   \param[out]  Param2 Pointer to a variable which will receive the state of the coil
+*   \param[out] Param2 Pointer to a variable which will receive the state of the coil
 *   \return     Shall be OK if operation is accepted
 *   \return     Shall be NOK if operation is not accepted
 ******************************************************************************/
@@ -93,7 +102,7 @@ t_status Modbus_CB_GetInput(unsigned short Param1, int* Param2) __attribute__((w
 *   \brief      This function provides the state of a single input
 *   \ingroup    Callbacks
 *   \param[in]  Param1 Address of the input to be read
-*   \param[out]  Param2 Pointer to a variable which will receive the state of the input
+*   \param[out] Param2 Pointer to a variable which will receive the state of the input
 *   \return     Shall be OK if operation is accepted
 *   \return     Shall be NOK if operation is not accepted
 ******************************************************************************/
@@ -108,7 +117,7 @@ t_status Modbus_CB_SetRegister(unsigned short Param1, int* Param2) __attribute__
 *   \brief      This function writes a value in a Single register
 *   \ingroup    Callbacks
 *   \param[in]  Param1 Address of the register to write
-*   \param[out]  Param2 Pointer to a variable which contains the value to write
+*   \param[out] Param2 Pointer to a variable which contains the value to write
 *   \return     Shall be OK if operation is accepted
 *   \return     Shall be NOK if operation is not accepted
 ******************************************************************************/
@@ -123,7 +132,7 @@ t_status Modbus_CB_GetRegister(unsigned short Param1, int* Param2) __attribute__
 *   \brief      This function provides the value of a single register
 *   \ingroup    Callbacks
 *   \param[in]  Param1 Address of the register to be read
-*   \param[out]  Param2 Pointer to a variable which will receive the value of the register
+*   \param[out] Param2 Pointer to a variable which will receive the value of the register
 *   \return     Shall be OK if operation is accepted
 *   \return     Shall be NOK if operation is not accepted
 ******************************************************************************/
@@ -138,7 +147,7 @@ t_status Modbus_CB_GetInputRegister(unsigned short Param1, int* Param2) __attrib
 *   \brief      This function provides the state of a single input register
 *   \ingroup    Callbacks
 *   \param[in]  Param1 Address of the input register to be read
-*   \param[out]  Param2 Pointer to a variable which will receive the state of the input register
+*   \param[out] Param2 Pointer to a variable which will receive the state of the input register
 *   \return     Shall be OK if operation is accepted
 *   \return     Shall be NOK if operation is not accepted
 ******************************************************************************/
@@ -152,7 +161,7 @@ t_status Modbus_CB_GetException(int* Param1) __attribute__((weak));
 /**************************************************************************//**
 *   \brief      This function provides the value of the Modbus exception register
 *   \ingroup    Callbacks
-*   \param[out]  Param1 Pointer to a variable which will receive the state of the exception register
+*   \param[out] Param1 Pointer to a variable which will receive the state of the exception register
 *   \return     Shall be OK if operation is accepted
 *   \return     Shall be NOK if operation is not accepted
 ******************************************************************************/
@@ -165,7 +174,7 @@ t_status Modbus_CB_GetException(int* Param1)
 // Class Interface : Device ///////////////////////////////////////////////////
 /**************************************************************************//**
 *   \brief      This function sets the type of Modbus RTU instance : Server or Client
-*   \ingroup Device
+*   \ingroup    Device
 *   \param[in]  Param Modbus device type
 *   \return     OK if Param is a supported Modbus device type
 *   \return     NOK if Param is not a supported Modbus device type
@@ -189,7 +198,7 @@ t_status Modbus_RTU::SetType(t_devicetype Param)
 
 /**************************************************************************//**
 *   \brief      This function provides the type of the Modbus instance : Server or Client
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[out] Param Pointer to a variable which will receive the device type
 *   \return     OK
 ******************************************************************************/
@@ -201,7 +210,7 @@ t_status Modbus_RTU::GetType(t_devicetype* Param)
 
 /**************************************************************************//**
 *   \brief      This function sets the Baudrate used for Modbus communication
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[in]  Param Modbus Baudrate (from 1200 to 19200)
 *   \return     OK if Param value is a supported Baudrate value
 *   \return     NOK if Param value is not a supported Baudrate value  
@@ -231,7 +240,7 @@ t_status Modbus_RTU::SetBaudrate(t_baud Param)
 
 /**************************************************************************//**
 *   \brief      This function provides the Baudrate used for Modbus communication
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[out] Param Pointer to a variable which will receive the baudrate value
 *   \return     OK
 ******************************************************************************/
@@ -243,7 +252,7 @@ t_status Modbus_RTU::GetBaudrate(t_baud* Param)
 
 /**************************************************************************//**
 *   \brief      This function sets the parity used for Modbus communication
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[in]  Param Modbus parity (None, even odd)
 *   \return     OK if Param value is a supported parity value
 *   \return     NOK if Param value is not a supported parity value  
@@ -270,7 +279,7 @@ t_status Modbus_RTU::SetParity(t_parity Param)
 
 /**************************************************************************//**
 *   \brief      This function provides the parity used for Modbus communication
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[out] Param Pointer to a variable which will receive the parity value
 *   \return     OK
 ******************************************************************************/
@@ -282,7 +291,7 @@ t_status Modbus_RTU::GetParity(t_parity* Param)
 
 /**************************************************************************//**
 *   \brief      This function provides the CRC16 for a given modbus frame
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[in]  msg Pointer to a the Modbus frame
 *   \param[out] Value Pointer to a variable which will receive the CRC16 value
 *   \return     OK if CRC16 is available
@@ -296,7 +305,7 @@ t_status Modbus_RTU::GetCRC16(Modbus_Frame* msg, unsigned short* Value)
 /**************************************************************************//**
 *   \brief      This function provides the minimum time between 2 frames 
 *               (should be equivalent to 3,5 char)
-*   \ingroup Device  
+*   \ingroup    Device  
 *   \param[out] Value Pointer to a variable which will receive the time in µs
 *   \return     OK if time is available
 *   \return     NOK if time is not available
@@ -335,7 +344,7 @@ t_status Modbus_RTU::GetFrameTimeout(unsigned long* Value)
 // Class Interface : Server ////////////////////////////////////////////////////
 /**************************************************************************//**
 *   \brief      This function sets the Modbus server address for the device 
-*   \ingroup Server  
+*   \ingroup    Server  
 *   \param[in]  Param Modbus address (from 1 to 247)
 *   \return     OK if Param is a supported address value
 *   \return     NOK if Param is not a supported address value or the device is not a server
@@ -361,7 +370,7 @@ t_status Modbus_RTU::Server_SetAddress(int Param)
 
 /**************************************************************************//**
 *   \brief      This function provides the Modbus server address of the device 
-*   \ingroup Server  
+*   \ingroup    Server  
 *   \param[out] Param Pointer to a variable which will contain the device address
 *   \return     OK if the device address exists even if it is not a valid one
 *   \return     NOK if the device address doesn't exist (i.e. the device is not a Modbus server)
@@ -388,8 +397,8 @@ t_status Modbus_RTU::Server_GetAddress(int* Param)
 *
 *               This function shall be called in the server main loop 
 *               after receiving a Modbus frame to generate the response frame
-*   \ingroup Server  
-*   \param[in,out]  msg Pointer to a message that contains the Modbus frame sent by the CLient 
+*   \ingroup    Server  
+*   \param[in,out]  msg Pointer to a message that contains the Modbus frame sent by the Client 
 *                 and will receive the response frame to be returned to the Client
 *   \return     OK if a response frame should be sent on the bus
 *   \return     NOK if no response frame should be sent on the bus
@@ -419,64 +428,70 @@ t_status Modbus_RTU::Server_Update(Modbus_Frame* msg)
         return(NOK);
       }
     }
-      // Check function code
-      switch (msg->data[1])
-      {
+    // Server is in Listen Only mode
+    if (Mdb_ListenOnly)
+    {
+      return(NOK);
+    }
+     
+    // Check function code
+    switch (msg->data[1])
+    {
 #if defined(MDB_FUNCTIONCODE_01)
-        case MDB_FC01: //Read Coils
-            Modbus_ReadCoils (msg);
-            break;
+      case MDB_FC01: //Read Coils
+          Modbus_ReadCoils (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_02)
-        case MDB_FC02: //Read Discrete Inputs
-            Modbus_ReadDiscreteInputs (msg);
-            break;
+      case MDB_FC02: //Read Discrete Inputs
+          Modbus_ReadDiscreteInputs (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_03)
-        case MDB_FC03: //Read Holding Registers
-            Modbus_ReadHoldingRegisters (msg);
-            break;
+      case MDB_FC03: //Read Holding Registers
+          Modbus_ReadHoldingRegisters (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_04)
-        case MDB_FC04: //Read Input Registers
-            Modbus_ReadInputRegisters (msg);
-            break;
+      case MDB_FC04: //Read Input Registers
+          Modbus_ReadInputRegisters (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_05)
-        case MDB_FC05: //Write Single coil
-            Modbus_WriteSingleCoil (msg);
-            break;
+      case MDB_FC05: //Write Single coil
+          Modbus_WriteSingleCoil (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_06)
-        case MDB_FC06: //Preset Single Register
-            Modbus_PresetSingleRegister (msg);
-            break;
+      case MDB_FC06: //Preset Single Register
+          Modbus_PresetSingleRegister (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_07)
-        case MDB_FC07: //Read Exception Status
-            Modbus_ReadExceptionStatus (msg);
-            break;
+      case MDB_FC07: //Read Exception Status
+          Modbus_ReadExceptionStatus (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_08)
-        case MDB_FC08: //Read Exception Status
-            Modbus_ReadDiagnostic (msg);
-            break;
+      case MDB_FC08: //Read Exception Status
+          Modbus_ReadDiagnostic (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_16)
-        case MDB_FC16: //Preset Multiple Registers
-            Modbus_PresetMultipleRegisters (msg);
-            break;
+      case MDB_FC16: //Preset Multiple Registers
+          Modbus_PresetMultipleRegisters (msg);
+          break;
 #endif
 #if defined(MDB_FUNCTIONCODE_23)
-        case MDB_FC23: //Read/Write Multiple Registers
-            Modbus_ReadWriteMultipleRegisters (msg);
-            break;
+      case MDB_FC23: //Read/Write Multiple Registers
+          Modbus_ReadWriteMultipleRegisters (msg);
+          break;
 #endif
-        default:
-            Modbus_Exception(MDB_EXCEPTION_ILLEGAL_FUNCTION, msg);
-            break;
-      }
-      Status = OK;
+      default:
+          Modbus_Exception(MDB_EXCEPTION_ILLEGAL_FUNCTION, msg);
+          break;
+    }
+    Status = OK;
   }
   else
   {
@@ -491,7 +506,7 @@ t_status Modbus_RTU::Server_Update(Modbus_Frame* msg)
 #if defined(MDB_FUNCTIONCODE_01)
 /**************************************************************************//**
 *   \brief      This function builds a Read Coils request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  Addr Address of the first coil to be read
 *   \param[in]  Nb Number of consecutive coils to read
@@ -528,7 +543,7 @@ t_status Modbus_RTU::Client_ReadCoils(int ServerAddr, unsigned short Addr, int N
 #if defined(MDB_FUNCTIONCODE_02)
 /**************************************************************************//**
 *   \brief      This function builds a Read Discrete Inputs request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  Addr Address of the first input to be read
 *   \param[in]  Nb Number of consecutive inputs to read
@@ -565,7 +580,7 @@ t_status Modbus_RTU::Client_ReadDiscreteInputs(int ServerAddr, unsigned short Ad
 #if defined(MDB_FUNCTIONCODE_03)
 /**************************************************************************//**
 *   \brief      This function builds a Read Holding Registers request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted server
 *   \param[in]  Addr Address of the first register to be read
 *   \param[in]  Nb Number of consecutive registers to read
@@ -602,7 +617,7 @@ t_status Modbus_RTU::Client_ReadHoldingRegisters(int ServerAddr, unsigned short 
 #if defined(MDB_FUNCTIONCODE_04)
 /**************************************************************************//**
 *   \brief      This function builds a Read Input Registers request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  Addr Address of the first input register to be read
 *   \param[in]  Nb Number of consecutive input registers to read
@@ -639,7 +654,7 @@ t_status Modbus_RTU::Client_ReadInputRegisters(int ServerAddr, unsigned short Ad
 #if defined(MDB_FUNCTIONCODE_05)
 /**************************************************************************//**
 *   \brief      This function builds a Write Single Coil request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  Addr Address of the coil to write
 *   \param[in]  Data Desired state of the coil
@@ -678,7 +693,7 @@ t_status Modbus_RTU::Client_WriteSingleCoil(int ServerAddr, unsigned short Addr,
 #if defined(MDB_FUNCTIONCODE_06)
 /**************************************************************************//**
 *   \brief      This function builds a Preset Single Register request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  Addr Address of the register to write
 *   \param[in]  Data Desired value of the register
@@ -715,7 +730,7 @@ t_status Modbus_RTU::Client_PresetSingleRegister(int ServerAddr, unsigned short 
 #if defined(MDB_FUNCTIONCODE_07)
 /**************************************************************************//**
 *   \brief      This function builds a Read Exception request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[out] msg Pointer to a message which will receive the request to be sent on the network
 *   \return     OK if the request frame has been successfuly generated
@@ -748,7 +763,7 @@ t_status Modbus_RTU::Client_ReadException(int ServerAddr, Modbus_Frame* msg)
 #if defined(MDB_FUNCTIONCODE_08)
 /**************************************************************************//**
 *   \brief      This function builds a Read Diagnostic request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  DiagType Select which diagnostic value is requested
 *   \param[in]  Data Additionnal information (depending on DiagType)
@@ -767,9 +782,33 @@ t_status Modbus_RTU::Client_ReadDiagnostic(int ServerAddr, t_diagtype DiagType, 
     msg->length = 8;
     msg->data[0] = ServerAddr;
     msg->data[1] = MDB_FC08;
-    PUT_WORD(&msg->data[2], DiagType);
-    PUT_WORD(&msg->data[4], Data);
-    
+    switch (DiagType)
+    {
+      case MDB_DIAG_0:  // Return query data
+          PUT_WORD(&msg->data[2], DiagType);
+          PUT_WORD(&msg->data[4], Data);
+          break;
+      case MDB_DIAG_1:  // Restart Communication option
+          PUT_WORD(&msg->data[2], DiagType);
+          PUT_WORD(&msg->data[4], Data);
+          break;
+      case MDB_DIAG_2:  // Return Diagnostic register
+      case MDB_DIAG_3:  // Change ASCII delimiter
+      case MDB_DIAG_4:  // Force Listen mode only
+      case MDB_DIAG_10: // Clear counters and Diagnostic register
+      case MDB_DIAG_11: // Return Bus message count
+      case MDB_DIAG_12: // Return Bus communication error count
+      case MDB_DIAG_13: // Return Bus Exception error count
+      case MDB_DIAG_14: // Return server message count
+      case MDB_DIAG_15: // Return server no response count
+      case MDB_DIAG_16: // Return server NAK count
+      case MDB_DIAG_17: // Return server busy count
+      case MDB_DIAG_18: // Return Bus character overrun count
+      case MDB_DIAG_20: // Clear Overrun counter and flag
+      default:
+          break;      
+    }
+
     // Add CRC16
     Status = Modbus_CRC16 (msg, &CRC16);
     PUT_WORD(&msg->data[msg->length-2], CRC16);
@@ -785,7 +824,7 @@ t_status Modbus_RTU::Client_ReadDiagnostic(int ServerAddr, t_diagtype DiagType, 
 #if defined(MDB_FUNCTIONCODE_16)
 /**************************************************************************//**
 *   \brief      This function builds a Preset Multiple Registers request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  Addr Address of the first register to be written
 *   \param[in]  Data Pointer to a structure which contains number of register to write 
@@ -838,7 +877,7 @@ t_status Modbus_RTU::Client_PresetMultipleRegisters(int ServerAddr, unsigned sho
 #if defined(MDB_FUNCTIONCODE_23)
 /**************************************************************************//**
 *   \brief      This function builds a Read/Write Multiple Registers request 
-*   \ingroup client  
+*   \ingroup    Client  
 *   \param[in]  ServerAddr Node address of the targeted Modbus server
 *   \param[in]  rAddr Address of the first register to be read
 *   \param[in]  rNb Number of consecutive registers registers to read
@@ -889,7 +928,7 @@ t_status Modbus_RTU::Client_ReadWriteMultipleRegisters(int ServerAddr, unsigned 
 *
 *   This function shall be called after receiving a response to a request frame 
 *   to extract required data.  
-*   \ingroup Client  
+*   \ingroup    Client  
 *   \param[in]  msg Pointer to a message which contains the response frame received from the network
 *   \param[out] Data Pointer to a structure which will receive the number of data and their values 
 *   \return     OK if treatment is possible (in case of Modbus exception, length will be 0) 
@@ -902,7 +941,7 @@ t_status Modbus_RTU::Client_Update(Modbus_Frame* msg, Modbus_Data* Data)
   unsigned short CRC16 = 0;
   unsigned short crc1 = 0xFFFF;
   
-  // Init of the destination structure
+  // Init of the result structure
   Data->length = 0;
   
   if (Mdb_Type == MDB_CLIENT)
@@ -955,6 +994,37 @@ t_status Modbus_RTU::Client_Update(Modbus_Frame* msg, Modbus_Data* Data)
           Data->data[0] = msg->data[2];
           break;
 #endif
+#if defined(MDB_FUNCTIONCODE_08)
+      case MDB_FC08:
+          t_diagtype Func;
+          Func = (t_diagtype)GET_WORD(&msg->data[2]);
+          switch (Func)
+          {
+            case MDB_DIAG_0:  // Return query data
+                Data->length = 1;
+                Data->type = MDB_WORD;
+                Data->data[0] = msg->data[4];
+                Data->data[1] = msg->data[5];
+                break;
+            case MDB_DIAG_1:  // Restart Communication option
+            case MDB_DIAG_2:  // Return Diagnostic register
+            case MDB_DIAG_3:  // Change ASCII delimiter
+            case MDB_DIAG_4:  // Force Listen mode only
+            case MDB_DIAG_10: // Clear counters and Diagnostic register
+            case MDB_DIAG_11: // Return Bus message count
+            case MDB_DIAG_12: // Return Bus communication error count
+            case MDB_DIAG_13: // Return Bus Exception error count
+            case MDB_DIAG_14: // Return server message count
+            case MDB_DIAG_15: // Return server no response count
+            case MDB_DIAG_16: // Return server NAK count
+            case MDB_DIAG_17: // Return server busy count
+            case MDB_DIAG_18: // Return Bus charactere overrun count
+            case MDB_DIAG_20: // Clear Overrun counter and flag
+            default:
+                break;
+          }
+          break;
+#endif
 #if defined(MDB_FUNCTIONCODE_16)
       case MDB_FC16:
           break;
@@ -979,7 +1049,7 @@ t_status Modbus_RTU::Client_Update(Modbus_Frame* msg, Modbus_Data* Data)
   {
     Status = NOK;
   }
-    return(OK);
+  return(OK);
 }
 //#endif
 
@@ -1055,7 +1125,7 @@ t_status Modbus_CRC16(Modbus_Frame* msg, unsigned short* Value)
   return (Status);
 }
 
-// Response management function
+// Response management functions
 #if defined(MDB_FUNCTIONCODE_01)
 /**************************************************************************//**
 *   \brief      This function builds the response frame to a FC01 command
@@ -1524,56 +1594,46 @@ t_status Modbus_ReadDiagnostic (Modbus_Frame*msg)
 {
   t_status Status;
   
-  unsigned short RegAddress;
-  unsigned short RegNb;
+  unsigned short SubFunc;
+  unsigned short Data;
   int RegValue;
   char* src;
   unsigned short CRC16 = 0;
 
-  // Extract the request data
-  RegAddress = GET_WORD(&msg->data[2]);
-  RegNb = GET_WORD(&msg->data[4]);
-
-  // Check if Request frame length is correct
-  if (msg->length == (char)(8))
+  // Extract the Sub-function 
+  SubFunc = GET_WORD(&msg->data[2]);
+  
+  switch(SubFunc)
   {
-    // Check if data are correct
-    if ((RegAddress < 0) || 
-        (RegAddress > (0xFFFF - RegNb + 1)) || 
-        (RegNb <= 0) || (RegNb > (MDB_REG_NUMBER_MAX - 2)))
-    {
-      Modbus_Exception(MDB_EXCEPTION_ILLEGAL_DATA_VALUE, msg);
-    }
-    else
-    {
-      // Length of the response including CRC
-      msg->length = 8;
-
-      // Start of the register value list
-      src = msg->data + 7;
-      
-      // Loop on all register
-      while(RegNb--)
-      {
-        RegValue = GET_WORD(src);
-        if (!Modbus_WriteRegister(RegAddress, &RegValue))
+    case MDB_DIAG_0:   // Return query data
+        // Check if Request frame length is correct (must be even)
+        if ((msg->length % 2) == 0)
         {
-          // One of the registers is not available
-          Modbus_Exception(MDB_EXCEPTION_ILLEGAL_DATA_ADDRESS, msg);
+          Status = OK;
         }
-        RegAddress++;
-        src += 2;
-      }
-      // Add CRC16
-      Modbus_CRC16 (msg, &CRC16);
-      PUT_WORD(src, CRC16);
-    }
-    Status = OK;
+        else
+          Modbus_Exception(MDB_EXCEPTION_ILLEGAL_DATA_ADDRESS, msg);
+
+        break;
+    case MDB_DIAG_1:  // Restart Communication option
+    case MDB_DIAG_2:  // Return Diagnostic register
+    case MDB_DIAG_3:  // Change ASCII delimiter
+    case MDB_DIAG_4:  // Force Listen mode only
+    case MDB_DIAG_10: // Clear counters and Diagnostic register
+    case MDB_DIAG_11: // Return Bus message count
+    case MDB_DIAG_12: // Return Bus communication error count
+    case MDB_DIAG_13: // Return Bus Exception error count
+    case MDB_DIAG_14: // Return server message count
+    case MDB_DIAG_15: // Return server no response count
+    case MDB_DIAG_16: // Return server NAK count
+    case MDB_DIAG_17: // Return server busy count
+    case MDB_DIAG_18: // Return Bus charactere overrun count
+    case MDB_DIAG_20: // Clear Overrun counter and flag
+    default:
+        Status = NOK;
+        break;
   }
-  else
-  {
-    Status = NOK;
-  }
+
   return (Status);
 }  
 #endif

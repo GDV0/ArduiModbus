@@ -227,6 +227,9 @@ class Modbus_RTU
     int Mdb_FrameReceived;
     int Mdb_FrameNotResponded;
     int Mdb_FrameServerReceived;
+    int Mdb_FrameExceptionSent;
+    int Mdb_FrameServerSent;
+    bool Mdb_ListenOnly;
   public:
     Modbus_RTU(int Param);
     // Device generic interface
