@@ -8,5 +8,6 @@ Modbus Function codes supported are:
   FC05: Force single coil
   FC06: Preset single register
   FC07: Read Exception status
+  FC08: Read Diagnostics
   FC16: Preset multiple registers
   FC23: Read/Write multiple registers
